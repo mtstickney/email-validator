@@ -1,0 +1,42 @@
+* Comparative email validation
+  This is a comparative implementation of a validating email address
+  parser in PHP using three techniques:
+  - =validator_lex.php=: Implemented using the technique described in
+    Rob Pike's talk [[http://www.youtube.com/watch?v%3DHxaD_trXwRE][Lexical Scanning in Go]].
+  - =validator_table.php=: A classic table-driven parser.
+  - =validator_statefunc.php=: A table-driven parser where the state
+    is a function that consumes input and returns the next state
+    function.
+
+    The validators implemented here aren't completely RFC-compliant
+    (comments, for example, aren't included), but the core of the
+    grammar is represented. Each php file includes a list of test
+    cases, and will output a status page for the test cases when
+    served over HTTP.
+
+* Results
+  Rob Pike's technique is interesting, but it requires a fair amount
+  of machinery and results in a fairly large parser in this case. The
+  chief advantage it has over the other two is that it could be
+  trivially modified to produce the tokens that it scanned, while the
+  others merely report success or failure. This parser is about twice
+  the size of the other two, and is somewhat less readable since the
+  state data is mixed up with control-flow code.
+
+  The other two parsers are quite similar in size and function. The
+  state function parser requires a little bit less machinery than the
+  table-driven parser, since states are reified outside the parsing
+  functions. Moreover, the state function parser doesn't have to
+  thread the current state between parser functions, which eliminates
+  a small amount of bookkeeping.
+
+  Overall, the different between the parsers mostly comes down to the
+  use-case. Pike's technique is more general-purpose than the parsers,
+  and probably more robust, but requires more implementation. It's
+  most well-suited to be included in a library and re-used (about half
+  the length of the implementation is the lexing machinery, so the
+  code specific to this case isn't very much larger than the other
+  parsers). The remaining two parsers have much lower implementation
+  overhead (the amount of parsing machinery is small), and are
+  well-suited to one-off cases where the parser won't need to be
+  extended much (for example to produce a token list).
